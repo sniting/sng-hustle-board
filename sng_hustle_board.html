@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNG's Fiery Hustle Board</title>
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SNG Board">
+
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <meta name="theme-color" content="#f97316">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-start: #f97316; /* orange-500 */
+            --gradient-mid: #ef4444;   /* red-500 */
+            --gradient-end: #7e22ce;   /* purple-700 */
+            --column-bg: rgba(17, 24, 39, 0.7); /* gray-900 semi-transparent */
+            --column-header-text: #f1f5f9; /* slate-100 */
+            --task-bg: #ffffff;
+            --task-text: #1f2937; /* gray-800 */
+            --accent-todo: #f59e0b; /* amber-500 */
+            --accent-inprogress: #eab308; /* yellow-500 */
+            --accent-done: #22c55e; /* green-500 */
+            --button-primary-bg: #dc2626; /* red-600 */
+            --button-primary-hover: #b91c1c; /* red-700 */
+            --quote-bg: rgba(255, 255, 255, 0.1);
+            --quote-border: rgba(255, 255, 255, 0.3);
+            --quote-text: #f8fafc; /* slate-50 */
+            --summary-bg: rgba(30, 41, 59, 0.8); /* slate-800 semi-transparent */
+            --summary-header: #facc15; /* yellow-400 */
+            --summary-text: #cbd5e1; /* slate-300 */
+            --summary-strong: #fde047; /* yellow-300 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%);
+            background-attachment: fixed;
+            padding-bottom: 5rem;
+            color: var(--column-header-text);
+        }
+        h1, h2, h3 {
+             font-family: 'Poppins', sans-serif;
+             font-weight: 800;
+             letter-spacing: 0.02em;
+        }
+        #main-title {
+            color: #ffffff;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+        }
+        #subtitle {
+             color: #f1f5f9;
+             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .kanban-column {
+            min-height: 350px;
+            background-color: var(--column-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .kanban-column h2 {
+             color: var(--column-header-text);
+             text-transform: uppercase;
+             font-weight: 700;
+             display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+             border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+             padding-bottom: 0.75rem;
+             margin-bottom: 1.25rem;
+        }
+        .kanban-task {
+            background-color: var(--task-bg);
+            color: var(--task-text);
+            border-radius: 0.5rem; padding: 0.8rem 1.1rem;
+            margin-bottom: 1rem;
+            cursor: grab;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.25s ease-in-out;
+            word-break: break-word; position: relative;
+            border-left: 5px solid var(--accent-todo);
+        }
+        #inprogress .kanban-task { border-left-color: var(--accent-inprogress); }
+        #done .kanban-task { border-left-color: var(--accent-done); }
+        .task-content-display { }
+        .task-time-info {
+            font-size: 0.8rem; color: #475569; margin-top: 0.4rem;
+            display: block; font-weight: 600;
+        }
+         .task-time-info .duration { color: #57534e; margin-left: 0.5rem; font-weight: 500; }
+        .task-completion-date {
+            font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; display: block;
+        }
+        .kanban-task:active:not(.editing) {
+            cursor: grabbing; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            transform: scale(1.03);
+        }
+        .dragging { opacity: 0.5; transform: rotate(3deg) scale(1.05); }
+        .drag-over { background-color: rgba(52, 68, 91, 0.8); }
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+        #time-date-display, #selected-date-display {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.8rem 1.2rem; border-radius: 0.6rem;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); text-align: center;
+            margin-bottom: 1rem; max-width: 400px; margin-left: auto; margin-right: auto;
+            color: #f1f5f9; font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+         #selected-date-display {
+             background-color: rgba(255, 255, 255, 0.2); color: #ffffff; font-weight: 700;
+             margin-top: 0.5rem; margin-bottom: 1.5rem; border-color: rgba(255, 255, 255, 0.3);
+         }
+         #motivational-quote {
+             background-color: var(--quote-bg);
+             backdrop-filter: blur(5px);
+             border: 1px solid var(--quote-border);
+             color: var(--quote-text);
+             padding: 1rem 1.2rem; border-radius: 0.6rem; text-align: center;
+             margin: 0 auto 2rem auto;
+             max-width: 550px; font-size: 1rem;
+             font-weight: 500;
+             font-style: normal;
+             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+         }
+         #daily-summary {
+            background-color: var(--summary-bg);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 1.5rem; border-radius: 0.75rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin-top: 2.5rem;
+            max-width: 6xl; margin-left: auto; margin-right: auto;
+        }
+        #daily-summary h3 { color: var(--summary-header); font-weight: 700; }
+        #daily-summary p { color: var(--summary-text); font-size: 0.95rem; line-height: 1.6; }
+        #daily-summary strong { font-weight: 700; color: var(--summary-strong); }
+        #date-selector-container { text-align: center; margin-bottom: 1rem; }
+        #date-selector-container label { margin-right: 0.5rem; font-weight: 700; color: #f1f5f9; }
+        #date-selector {
+             padding: 0.6rem 0.8rem; border: 1px solid rgba(255,255,255,0.3); border-radius: 0.5rem;
+             box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.1); cursor: pointer;
+             background-color: rgba(255,255,255, 0.15); color: #ffffff; font-weight: 500;
+        }
+        #add-task-form-container {
+             background-color: rgba(30, 41, 59, 0.75);
+             backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1);
+             padding: 1.75rem; border-radius: 0.75rem; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+        }
+        #add-task-form { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
+        #add-task-form > div { flex-grow: 1; }
+        #add-task-form label {
+             display: block; font-size: 0.9rem; font-weight: 600;
+             color: #cbd5e1; margin-bottom: 0.4rem;
+        }
+        #add-task-form input[type="text"],
+        #add-task-form input[type="time"] {
+             width: 100%; border: 1px solid #475569; border-radius: 0.5rem;
+             padding: 0.6rem 0.9rem; box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.1);
+             font-size: 0.9rem; background-color: #1e293b; color: #f1f5f9;
+        }
+         #add-task-form button {
+             background-color: var(--button-primary-bg);
+             color: white; font-weight: 700; padding: 0.6rem 1.5rem;
+             border-radius: 0.5rem; transition: all 0.2s ease-in-out;
+             box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+             border: none; align-self: flex-end; cursor: pointer; text-transform: uppercase;
+         }
+         #add-task-form button:hover {
+             background-color: var(--button-primary-hover);
+             transform: translateY(-2px) scale(1.02);
+             box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+         }
+         .task-edit-form { display: flex; flex-direction: column; gap: 0.6rem; }
+         .task-edit-form input[type="text"],
+         .task-edit-form input[type="time"] {
+             width: 100%; border: 1px solid #94a3b8; border-radius: 0.375rem;
+             padding: 0.4rem 0.6rem; font-size: 0.875rem; background-color: #f8fafc; color: #1e293b;
+         }
+         .task-edit-form .edit-time-inputs { display: flex; gap: 0.6rem; }
+         .task-edit-form .edit-time-inputs > div { flex-grow: 1; }
+         .task-edit-form .edit-buttons { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.6rem; }
+         .task-edit-form button {
+             padding: 0.3rem 0.7rem; border-radius: 0.375rem; font-size: 0.8rem;
+             font-weight: 700; transition: all 0.2s ease; border: none; cursor: pointer; text-transform: uppercase;
+         }
+         .edit-save-btn { background-color: #16a34a; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+         .edit-save-btn:hover { background-color: #15803d; transform: scale(1.05); box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
+         .edit-cancel-btn { background-color: #94a3b8; color: #1e293b; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+         .edit-cancel-btn:hover { background-color: #64748b; transform: scale(1.05); box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
+         .delete-task-btn {
+             position: absolute; top: 0.4rem; right: 0.4rem; background: none; border: none;
+             color: #fca5a5; font-size: 1.2rem; line-height: 1; cursor: pointer;
+             padding: 0.1rem; opacity: 0.4; transition: all 0.2s ease;
+         }
+         .kanban-task:hover .delete-task-btn { opacity: 0.8; }
+         .delete-task-btn:hover { opacity: 1; color: #ef4444; transform: scale(1.15) rotate(10deg); }
+         .kanban-task.editing { cursor: default; border-left-color: var(--button-primary-bg); }
+         .task-just-moved {
+            background-color: rgba(250, 204, 21, 0.3);
+            animation: highlight-fade 1.8s ease-out;
+         }
+         @keyframes highlight-fade {
+             0% { background-color: rgba(250, 204, 21, 0.6); }
+             100% { background-color: var(--task-bg); }
+         }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <h1 id="main-title" class="text-5xl font-extrabold text-center mb-2">SNG's Hustle Board</h1>
+    <p id="subtitle" class="text-center text-lg mb-6">Plan & Conquer.</p>
+
+    <div id="time-date-display" class="text-base">Loading time...</div>
+
+    <div id="motivational-quote">Loading inspiration...</div>
+
+    <div id="date-selector-container">
+        <label for="date-selector">Select Date:</label>
+        <input type="date" id="date-selector">
+    </div>
+
+    <div id="selected-date-display" class="text-lg">Loading tasks for...</div>
+
+    <div class="mb-10 max-w-xl mx-auto" id="add-task-form-container">
+        <h2 class="text-2xl font-bold mb-5 text-center text-slate-100">Add New Hustle</h2>
+        <div id="add-task-form">
+             <div class="flex-grow min-w-[150px]">
+                 <label for="new-task-input">Task:</label>
+                 <input type="text" id="new-task-input" placeholder="Define the next victory..." class="focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+             </div>
+             <div class="min-w-[100px]">
+                 <label for="new-task-start-time">Start:</label>
+                 <input type="time" id="new-task-start-time" class="focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+             </div>
+             <div class="min-w-[100px]">
+                 <label for="new-task-end-time">End:</label>
+                 <input type="time" id="new-task-end-time" class="focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+             </div>
+             <button id="add-task-btn">Lock It In</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div id="todo" class="kanban-column" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <h2 class="text-xl mb-5">🎯 To Do</h2>
+        </div>
+        <div id="inprogress" class="kanban-column" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <h2 class="text-xl mb-5">🔥 In Progress</h2>
+        </div>
+        <div id="done" class="kanban-column" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <h2 class="text-xl mb-5">🏆 Done!</h2>
+        </div>
+    </div>
+
+    <div id="daily-summary" class="hidden">
+        <h3 class="text-xl font-bold">Daily Wins Recap!</h3>
+        <p id="summary-content">No summary available yet.</p>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <script>
+        // --- Constants ---
+        const BOSTON_TIMEZONE = 'America/New_York';
+        const APP_DATA_KEY = 'sngHustleBoard_v2_fiery'; // Updated key for new style
+        const TASK_CHECK_INTERVAL = 60000;
+
+        // --- Motivational Quotes ---
+        const motivationalQuotes = [
+            "The only way to do great work is to love what you do. - Steve Jobs", "Success is not final, failure is not fatal: It is the courage to continue that counts. - Winston Churchill", "Your time is limited, don't waste it living someone else's life. - Steve Jobs", "Strive not to be a success, but rather to be of value. - Albert Einstein", "The mind is everything. What you think you become. - Buddha", "The best way to predict the future is to create it. - Peter Drucker", "Opportunities don't happen, you create them. - Chris Grosser", "Don't watch the clock; do what it does. Keep going. - Sam Levenson", "The secret of getting ahead is getting started. - Mark Twain", "It's not whether you get knocked down, it's whether you get up. - Vince Lombardi", "Build your own dreams, or someone else will hire you to build theirs. - Farraj Gray", "Music expresses that which cannot be said and on which it is impossible to be silent. - Victor Hugo", "Where words fail, music speaks. - Hans Christian Andersen", "Without music, life would be a mistake. - Friedrich Nietzsche"
+        ];
+        let currentQuoteIndex = -1;
+
+        // --- DOM Elements ---
+        const columns = document.querySelectorAll('.kanban-column'); const timeDateDisplay = document.getElementById('time-date-display'); const dateSelector = document.getElementById('date-selector'); const selectedDateDisplay = document.getElementById('selected-date-display'); const dailySummaryDiv = document.getElementById('daily-summary'); const summaryContentP = document.getElementById('summary-content'); const confettiCanvas = document.getElementById('confetti-canvas'); const quoteDisplay = document.getElementById('motivational-quote');
+
+        // --- Confetti Setup ---
+        const myConfetti = confetti.create(confettiCanvas, { resize: true, useWorker: true });
+
+        // --- State ---
+        let draggedTask = null; let currentSelectedDate = ''; let taskCheckIntervalId = null;
+
+        // --- Utility Functions ---
+        function getCurrentDateString(timeZone) { const now = new Date(); const formatter = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: timeZone }); return formatter.format(now); }
+        function getCurrentTimeString(timeZone) { const now = new Date(); const formatter = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timeZone }); return formatter.format(now); }
+        function formatLiveDateTime(timeZone) { const now = new Date(); const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: timeZone }; return now.toLocaleString('en-US', options); }
+        function formatDisplayDate(dateString) { if (!dateString) return "Invalid Date"; const [year, month, day] = dateString.split('-'); const date = new Date(Date.UTC(year, month - 1, day)); const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }; return date.toLocaleDateString('en-US', options); }
+        function calculateDuration(startTime, endTime) { if (!startTime || !endTime) return ""; try { const start = new Date(`1970-01-01T${startTime}:00`); const end = new Date(`1970-01-01T${endTime}:00`); if (isNaN(start) || isNaN(end) || end <= start) return ""; let diffMillis = end - start; const hours = Math.floor(diffMillis / (1000 * 60 * 60)); diffMillis -= hours * (1000 * 60 * 60); const minutes = Math.floor(diffMillis / (1000 * 60)); let durationStr = ""; if (hours > 0) durationStr += `${hours}h `; if (minutes > 0) durationStr += `${minutes}m`; return durationStr.trim(); } catch (e) { console.error("Error calculating duration:", e); return ""; } }
+
+        // --- Data Management Functions ---
+        function loadAppData() { const data = localStorage.getItem(APP_DATA_KEY); if (data) { try { return JSON.parse(data); } catch (e) { console.error("Error parsing localStorage data:", e); } } return { tasksByDate: {}, archivedKanbanTasks: {} }; }
+        function saveAppData(appData) { try { localStorage.setItem(APP_DATA_KEY, JSON.stringify(appData)); } catch (e) { console.error("Error saving data:", e); alert("Could not save tasks."); } }
+        function getTasksForDate(appData, dateString) { if (!appData.tasksByDate[dateString]) { appData.tasksByDate[dateString] = { todo: [], inprogress: [], done: [] }; } return appData.tasksByDate[dateString]; }
+
+        // --- Core Functions ---
+        function updateTimeDisplay() { if (timeDateDisplay) timeDateDisplay.textContent = formatLiveDateTime(BOSTON_TIMEZONE); }
+        function clearBoard() { columns.forEach(column => { column.querySelectorAll('.kanban-task').forEach(task => task.remove()); }); }
+        function createTaskDisplayContent(taskData) { const displayWrapper = document.createElement('div'); displayWrapper.classList.add('task-content-display'); const textNode = document.createTextNode(taskData.text); displayWrapper.appendChild(textNode); if (taskData.startTime && taskData.endTime) { const timeInfoSpan = document.createElement('span'); timeInfoSpan.classList.add('task-time-info'); const duration = calculateDuration(taskData.startTime, taskData.endTime); timeInfoSpan.innerHTML = `${taskData.startTime} - ${taskData.endTime}` + (duration ? ` <span class="duration">(${duration})</span>` : ''); displayWrapper.appendChild(timeInfoSpan); } if (taskData.completionDate) { const dateSpan = document.createElement('span'); dateSpan.classList.add('task-completion-date'); dateSpan.textContent = `Completed: ${taskData.completionDate}`; displayWrapper.appendChild(dateSpan); } return displayWrapper; }
+        function createTaskElement(taskData) { const { id, text, startTime, endTime, completionDate } = taskData; const task = document.createElement('div'); task.classList.add('kanban-task'); task.setAttribute('draggable', 'true'); task.id = id || `task-${Date.now()}`; task.dataset.text = text; if (startTime) task.dataset.startTime = startTime; if (endTime) task.dataset.endTime = endTime; if (completionDate) task.dataset.completionDate = completionDate; const displayContent = createTaskDisplayContent(taskData); task.appendChild(displayContent); const deleteBtn = document.createElement('button'); deleteBtn.classList.add('delete-task-btn'); deleteBtn.innerHTML = '&times;'; deleteBtn.setAttribute('aria-label', 'Delete task'); deleteBtn.onclick = (event) => { event.stopPropagation(); if (confirm(`Are you sure you want to delete task: "${task.dataset.text}"?`)) { task.remove(); saveCurrentBoardState(); } }; task.appendChild(deleteBtn); task.addEventListener('dragstart', (event) => { if (task.classList.contains('editing')) { event.preventDefault(); return; } draggedTask = event.target; event.dataTransfer.setData('text/plain', event.target.id); setTimeout(() => event.target.classList.add('dragging'), 0); }); task.addEventListener('dragend', () => { if (draggedTask) draggedTask.classList.remove('dragging'); draggedTask = null; }); task.addEventListener('dblclick', (event) => { if (event.target === deleteBtn) return; enterEditMode(task); }); return task; }
+        function enterEditMode(taskElement) { if (taskElement.classList.contains('editing')) return; taskElement.classList.add('editing'); taskElement.setAttribute('draggable', 'false'); const displayContent = taskElement.querySelector('.task-content-display'); if (displayContent) displayContent.style.display = 'none'; const editForm = document.createElement('div'); editForm.classList.add('task-edit-form'); const textInput = document.createElement('input'); textInput.type = 'text'; textInput.value = taskElement.dataset.text || ''; textInput.placeholder = 'Task description'; const timeInputsDiv = document.createElement('div'); timeInputsDiv.classList.add('edit-time-inputs'); const startTimeDiv = document.createElement('div'); const startTimeInput = document.createElement('input'); startTimeInput.type = 'time'; startTimeInput.value = taskElement.dataset.startTime || ''; startTimeDiv.appendChild(startTimeInput); const endTimeDiv = document.createElement('div'); const endTimeInput = document.createElement('input'); endTimeInput.type = 'time'; endTimeInput.value = taskElement.dataset.endTime || ''; endTimeDiv.appendChild(endTimeInput); timeInputsDiv.appendChild(startTimeDiv); timeInputsDiv.appendChild(endTimeDiv); const buttonsDiv = document.createElement('div'); buttonsDiv.classList.add('edit-buttons'); const saveBtn = document.createElement('button'); saveBtn.textContent = 'Save'; saveBtn.classList.add('edit-save-btn'); saveBtn.onclick = () => saveEdit(taskElement, textInput, startTimeInput, endTimeInput); const cancelBtn = document.createElement('button'); cancelBtn.textContent = 'Cancel'; cancelBtn.classList.add('edit-cancel-btn'); cancelBtn.onclick = () => cancelEdit(taskElement); buttonsDiv.appendChild(saveBtn); buttonsDiv.appendChild(cancelBtn); editForm.appendChild(textInput); editForm.appendChild(timeInputsDiv); editForm.appendChild(buttonsDiv); taskElement.appendChild(editForm); textInput.focus(); }
+        function exitEditMode(taskElement) { const editForm = taskElement.querySelector('.task-edit-form'); if (editForm) editForm.remove(); const displayContent = taskElement.querySelector('.task-content-display'); if (displayContent) displayContent.style.display = ''; taskElement.classList.remove('editing'); taskElement.setAttribute('draggable', 'true'); }
+        function saveEdit(taskElement, textInput, startTimeInput, endTimeInput) { const newText = textInput.value.trim(); const newStartTime = startTimeInput.value; const newEndTime = endTimeInput.value; if (newText === '') { alert('Task description cannot be empty.'); textInput.focus(); return; } if (!newStartTime) { alert('Please enter a start time.'); startTimeInput.focus(); return; } if (!newEndTime) { alert('Please enter an end time.'); endTimeInput.focus(); return; } if (newStartTime >= newEndTime) { alert('End time must be after start time.'); endTimeInput.focus(); return; } taskElement.dataset.text = newText; taskElement.dataset.startTime = newStartTime; taskElement.dataset.endTime = newEndTime; const completionDate = taskElement.dataset.completionDate || null; const displayContent = taskElement.querySelector('.task-content-display'); if (displayContent) { while (displayContent.firstChild) { displayContent.removeChild(displayContent.firstChild); } const updatedDisplayData = { text: newText, startTime: newStartTime, endTime: newEndTime, completionDate: completionDate }; const newDisplay = createTaskDisplayContent(updatedDisplayData); while (newDisplay.firstChild) { displayContent.appendChild(newDisplay.firstChild); } } exitEditMode(taskElement); saveCurrentBoardState(); console.log("Task edited and saved:", taskElement.id); }
+        function cancelEdit(taskElement) { exitEditMode(taskElement); console.log("Task edit cancelled:", taskElement.id); }
+        function displayTasksForDate(dateString) { currentSelectedDate = dateString; selectedDateDisplay.textContent = `Showing tasks for: ${formatDisplayDate(dateString)}`; dateSelector.value = dateString; clearBoard(); const appData = loadAppData(); const tasksForDay = getTasksForDate(appData, dateString); Object.keys(tasksForDay).forEach(columnId => { const columnElement = document.getElementById(columnId); if (columnElement) { tasksForDay[columnId].forEach(taskData => { const fullTaskData = { id: taskData.id, text: taskData.text || '', startTime: taskData.startTime || null, endTime: taskData.endTime || null, completionDate: taskData.completionDate || null }; const taskElement = createTaskElement(fullTaskData); columnElement.appendChild(taskElement); }); } }); checkAndMoveTasks(); }
+        function saveCurrentBoardState() { if (!currentSelectedDate) return; const appData = loadAppData(); const tasksForCurrentDate = getTasksForDate(appData, currentSelectedDate); tasksForCurrentDate.todo = []; tasksForCurrentDate.inprogress = []; tasksForCurrentDate.done = []; columns.forEach(column => { const columnId = column.id; column.querySelectorAll('.kanban-task').forEach(task => { const taskData = { id: task.id, text: task.dataset.text || '', startTime: task.dataset.startTime || null, endTime: task.dataset.endTime || null, completionDate: task.dataset.completionDate || null }; tasksForCurrentDate[columnId].push(taskData); }); }); saveAppData(appData); }
+        function addTask() { console.log("addTask function called."); const taskInput = document.getElementById('new-task-input'); const startTimeInput = document.getElementById('new-task-start-time'); const endTimeInput = document.getElementById('new-task-end-time'); const currentTodoColumn = document.getElementById('todo'); if (!taskInput || !startTimeInput || !endTimeInput || !currentTodoColumn) { console.error("Error: One or more input/column elements not found in addTask."); return; } const taskText = taskInput.value.trim(); const startTime = startTimeInput.value; const endTime = endTimeInput.value; if (taskText === '') { alert('Please enter a task description.'); taskInput.focus(); return; } if (!startTime) { alert('Please enter a start time.'); startTimeInput.focus(); return; } if (!endTime) { alert('Please enter an end time.'); endTimeInput.focus(); return; } if (startTime >= endTime) { alert('End time must be after start time.'); endTimeInput.focus(); return; } if (!currentSelectedDate) { alert('Please select a date first.'); return; } const appData = loadAppData(); const tasksForSelectedDate = getTasksForDate(appData, currentSelectedDate); const newTaskData = { id: `task-${Date.now()}`, text: taskText, startTime: startTime, endTime: endTime, completionDate: null }; tasksForSelectedDate.todo.push(newTaskData); saveAppData(appData); const newTaskElement = createTaskElement(newTaskData); if (newTaskElement) { currentTodoColumn.appendChild(newTaskElement); } else { console.error("Error appending task: newTaskElement is null/undefined."); return; } taskInput.value = ''; startTimeInput.value = ''; endTimeInput.value = ''; console.log(`addTask completed for "${taskText}"`); checkAndMoveTasks(); }
+        function handleDragOver(event) { const taskElement = event.target.closest('.kanban-task'); if (taskElement && taskElement.classList.contains('editing')) { return; } event.preventDefault(); const targetColumn = event.target.closest('.kanban-column'); if (targetColumn && !targetColumn.classList.contains('drag-over')) { targetColumn.classList.add('drag-over'); } }
+        function handleDragLeave(event) { const targetColumn = event.target.closest('.kanban-column'); if (targetColumn) targetColumn.classList.remove('drag-over'); }
+        function handleDrop(event) { event.preventDefault(); const targetColumn = event.target.closest('.kanban-column'); const targetTask = event.target.closest('.kanban-task'); if (targetTask && targetTask.classList.contains('editing')) { targetColumn?.classList.remove('drag-over'); return; } if (targetColumn && draggedTask) { if (draggedTask === targetTask) { targetColumn.classList.remove('drag-over'); return; } const previousColumn = draggedTask.parentElement; let completionDate = draggedTask.dataset.completionDate || null; const existingDateSpan = draggedTask.querySelector('.task-completion-date'); if (existingDateSpan) existingDateSpan.remove(); if (targetColumn.id === 'done') { completionDate = getCurrentDateString(BOSTON_TIMEZONE); draggedTask.dataset.completionDate = completionDate; const dateSpan = document.createElement('span'); dateSpan.classList.add('task-completion-date'); dateSpan.textContent = `Completed: ${completionDate}`; const timeInfo = draggedTask.querySelector('.task-time-info'); if (timeInfo) { timeInfo.insertAdjacentElement('afterend', dateSpan); } else { draggedTask.appendChild(dateSpan); } if (previousColumn.id !== 'done') { triggerConfetti(); } } else { delete draggedTask.dataset.completionDate; completionDate = null; } targetColumn.appendChild(draggedTask); targetColumn.classList.remove('drag-over'); saveCurrentBoardState(); } else if (targetColumn) { targetColumn.classList.remove('drag-over'); } }
+        function triggerConfetti() { myConfetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#f97316', '#ef4444', '#facc15', '#ffffff', '#a855f7'] }); }
+
+        // --- Archiving and Summary Functions ---
+        function archiveTask(appData, dateString, taskData) { if (!taskData.completionDate) return; if (!appData.archivedKanbanTasks[taskData.completionDate]) { appData.archivedKanbanTasks[taskData.completionDate] = []; } if (!appData.archivedKanbanTasks[taskData.completionDate].some(t => t.id === taskData.id)) { appData.archivedKanbanTasks[taskData.completionDate].push(taskData); } }
+        function runArchivingProcess(appData, currentBostonDate) { let tasksArchived = false; const today = new Date(currentBostonDate.split('-').join('/')); Object.keys(appData.tasksByDate).forEach(dateString => { const taskDate = new Date(dateString.split('-').join('/')); if (taskDate < today) { const tasksForDay = appData.tasksByDate[dateString]; const remainingDoneTasks = []; if (tasksForDay.done && tasksForDay.done.length > 0) { tasksForDay.done.forEach(taskData => { if (taskData.completionDate) { archiveTask(appData, dateString, taskData); tasksArchived = true; } else { remainingDoneTasks.push(taskData); } }); tasksForDay.done = remainingDoneTasks; } } }); return tasksArchived; }
+        function generateSummaryText(tasks) { if (!tasks || tasks.length === 0) { return "No tasks were completed on this day. Plan the next win!"; } const taskTexts = tasks.map(t => t.text); let summary = `Alright Nitin (SNG), here's the recap of today's wins! You crushed ${tasks.length} task(s): `; if (taskTexts.length === 1) { summary += `<strong>${taskTexts[0]}</strong>.`; } else if (taskTexts.length === 2) { summary += `<strong>${taskTexts[0]}</strong> and <strong>${taskTexts[1]}</strong>.`; } else { const lastTask = taskTexts.pop(); summary += `<strong>${taskTexts.join('</strong>, <strong>')}</strong>, and <strong>${lastTask}</strong>.`; } return summary + " Keep that momentum going! 🚀"; }
+        function displayLatestSummary(appData) { const archives = appData.archivedKanbanTasks || {}; const archivedDates = Object.keys(archives).sort().reverse(); if (archivedDates.length > 0) { const latestDate = archivedDates[0]; const latestTasks = archives[latestDate]; summaryContentP.innerHTML = generateSummaryText(latestTasks); dailySummaryDiv.querySelector('h3').textContent = `Daily Wins Recap for ${formatDisplayDate(latestDate)}!`; dailySummaryDiv.classList.remove('hidden'); } else { dailySummaryDiv.classList.add('hidden'); } }
+
+        // --- Automatic Task Movement ---
+        function checkAndMoveTasks() { const todayDateStr = getCurrentDateString(BOSTON_TIMEZONE); if (currentSelectedDate !== todayDateStr) { return; } const currentTimeStr = getCurrentTimeString(BOSTON_TIMEZONE); const todoCol = document.getElementById('todo'); const inProgressCol = document.getElementById('inprogress'); if (!todoCol || !inProgressCol) { console.error("Cannot find To Do or In Progress columns for auto-move."); return; } const tasksInTodo = todoCol.querySelectorAll('.kanban-task'); let taskMoved = false; tasksInTodo.forEach(task => { if (task.classList.contains('editing')) { return; } const taskStartTime = task.dataset.startTime; if (taskStartTime && currentTimeStr >= taskStartTime) { console.log(`Auto-moving task "${task.dataset.text}" (ID: ${task.id}) starting at ${taskStartTime}`); inProgressCol.appendChild(task); taskMoved = true; task.classList.add('task-just-moved'); setTimeout(() => { task.classList.remove('task-just-moved'); }, 1800); } }); if (taskMoved) { saveCurrentBoardState(); } }
+
+        // --- Motivational Quote Display ---
+        function displayMotivationalQuote() { if (!quoteDisplay) return; let randomIndex; do { randomIndex = Math.floor(Math.random() * motivationalQuotes.length); } while (randomIndex === currentQuoteIndex && motivationalQuotes.length > 1); currentQuoteIndex = randomIndex; quoteDisplay.textContent = motivationalQuotes[currentQuoteIndex]; }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTimeDisplay(); setInterval(updateTimeDisplay, 60000);
+            displayMotivationalQuote();
+            const appData = loadAppData(); const currentBostonDate = getCurrentDateString(BOSTON_TIMEZONE); const didArchive = runArchivingProcess(appData, currentBostonDate); if (didArchive) { saveAppData(appData); }
+            if (dateSelector) { dateSelector.value = currentBostonDate; displayTasksForDate(currentBostonDate); dateSelector.addEventListener('change', (event) => { displayTasksForDate(event.target.value); }); } else { console.error("Date selector element not found."); }
+            displayLatestSummary(appData);
+            const addTaskBtnLocal = document.getElementById('add-task-btn'); if (addTaskBtnLocal) { addTaskBtnLocal.addEventListener('click', addTask); const taskInputLocal = document.getElementById('new-task-input'); const startTimeInputLocal = document.getElementById('new-task-start-time'); const endTimeInputLocal = document.getElementById('new-task-end-time'); if (taskInputLocal) taskInputLocal.addEventListener('keypress', (event) => { if (event.key === 'Enter') addTask(); }); if (startTimeInputLocal) startTimeInputLocal.addEventListener('keypress', (event) => { if (event.key === 'Enter') addTask(); }); if (endTimeInputLocal) endTimeInputLocal.addEventListener('keypress', (event) => { if (event.key === 'Enter') addTask(); }); } else { console.error("Add task button not found."); }
+            if (taskCheckIntervalId) clearInterval(taskCheckIntervalId); taskCheckIntervalId = setInterval(checkAndMoveTasks, TASK_CHECK_INTERVAL); console.log(`Started task check interval (${TASK_CHECK_INTERVAL / 1000}s). ID: ${taskCheckIntervalId}`);
+        });
+
+    </script>
+
+</body>
+</html>
