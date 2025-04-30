@@ -102,6 +102,7 @@
          #add-task-form-container:hover { transform: scale(1.01); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3); }
          #add-task-form { /* Responsive grid layout remains same */ }
          #add-task-form label { /* Styles remain same */ text-shadow: 1px 1px 1px rgba(0,0,0,0.3); }
+         /* Input field background/text color fix */
          #add-task-form input[type="text"],
          #add-task-form input[type="time"] {
              width: 100%; border: 1px solid var(--input-border); border-radius: 0.5rem; padding: 0.6rem 0.9rem;
@@ -147,7 +148,7 @@
 
         .kanban-task {
             background-color: var(--task-bg); color: var(--task-text); border-radius: 0.5rem;
-            padding: 0.8rem 1.1rem; padding-right: 2rem; /* Add padding for delete button */
+            padding: 0.8rem 1.1rem; padding-right: 2.5rem; /* Ensure space for delete button */
             margin-bottom: 1rem; cursor: grab; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: all 0.25s ease-in-out; word-break: break-word; position: relative;
             border-left: 5px solid var(--accent-todo);
@@ -178,21 +179,21 @@
          /* Delete Button Position Fix */
          .delete-task-btn {
              position: absolute;
-             top: 0.5rem; /* Adjust vertical position */
-             right: 0.5rem; /* Adjust horizontal position */
-             background: none; border: none; color: #fca5a5; font-size: 1.3rem; /* Slightly larger */
-             line-height: 1; cursor: pointer; padding: 0; /* Remove padding */
-             opacity: 0.4; transition: all 0.2s ease; z-index: 10; /* Ensure it's clickable */
+             top: 0.5rem;
+             right: 0.5rem;
+             background: none; border: none; color: #fca5a5; font-size: 1.3rem;
+             line-height: 1; cursor: pointer; padding: 0;
+             opacity: 0.4; transition: all 0.2s ease; z-index: 10;
          }
          .kanban-task:hover .delete-task-btn { opacity: 0.8; }
          .delete-task-btn:hover { opacity: 1; color: #ef4444; transform: scale(1.15) rotate(10deg); }
          .kanban-task.editing { /* Styles remain same */ }
 
          /* --- Notes Page Styles --- */
-         .notes-view { /* Styles remain same */ }
-         .notes-view h3 { /* Styles remain same */ text-shadow: var(--text-shadow-medium); }
-         .notes-section { /* Styles remain same */ }
-         .notes-section h4 { /* Styles remain same */ text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+         .notes-view { background-color: var(--notes-bg); padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); max-width: 900px; margin: 1rem auto; }
+         .notes-view h3 { color: var(--notes-header); text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; text-shadow: var(--text-shadow-medium); }
+         .notes-section { margin-bottom: 2rem; }
+         .notes-section h4 { color: var(--column-header-text); font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2); padding-bottom: 0.5rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
          .notes-form { /* Styles remain same */ }
          @media (min-width: 640px) { .notes-form { /* Styles remain same */ } }
          .notes-form label { /* Styles remain same */ }
