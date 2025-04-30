@@ -20,7 +20,8 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="theme-color" content="#f97316">
     <style>
-        :root { /* Color variables */
+        /* Styles Based on Final Polish v3 - Layout Fix */
+        :root {
             --column-bg: rgba(17, 24, 39, 0.9);
             --column-header-text: #f8fafc;
             --task-bg: #ffffff; --task-text: #1f2937;
@@ -45,11 +46,14 @@
             /* Stronger Text Shadow for contrast */
             --text-shadow-heavy: 0px 1px 4px rgba(0,0,0,0.9), 1px 2px 3px rgba(0,0,0,0.8);
             --text-shadow-light: 0px 1px 3px rgba(0,0,0,0.7), 1px 1px 2px rgba(0,0,0,0.6);
+            /* NEW: Celebration Colors */
+            --celebration-bg: rgba(22, 163, 74, 0.85); /* green-600 semi-transparent */
+            --celebration-text: #ffffff;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-image: url('https://raw.githubusercontent.com/sniting/sng-hustle-board/main/game-of-thrones-season-8-cartoon-1y7i9ou5f2clujq6.jpg');
+            background-image: url('https://raw.githubusercontent.com/sniting/sng-hustle-board/main/ChatGPT%20Image%20Apr%2030%2C%202025%20at%2008_44_34%20AM.jpg');
             background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed;
             background-color: #374151; /* Fallback */
             padding: 2rem 1rem 5rem 1rem; color: var(--info-box-text);
@@ -125,75 +129,120 @@
             display: grid; grid-template-columns: 1fr; gap: 2.5rem; margin-top: 2rem;
             max-width: 768px; margin-left: auto; margin-right: auto;
          }
+
         .user-board { }
         .user-board-header { text-align: center; font-size: 1.5rem; font-weight: 800; color: var(--column-header-text); margin-bottom: 1.5rem; text-shadow: var(--text-shadow-heavy); }
         #nitin-board .user-board-header { color: var(--nitin-accent); }
         #sathu-board .user-board-header { color: var(--sathu-accent); }
-        .kanban-columns-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-        @media (min-width: 640px) { .kanban-columns-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
-        .kanban-column { min-height: 350px; background-color: var(--column-bg); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.75rem; padding: 1.25rem; transition: all 0.35s ease-out; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); }
+
+        .kanban-columns-grid {
+             display: grid; grid-template-columns: 1fr; gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+            .kanban-columns-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        }
+
+        .kanban-column {
+            min-height: 350px; background-color: var(--column-bg); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.75rem; padding: 1.25rem;
+            transition: all 0.35s ease-out; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+        }
         .kanban-column:hover { transform: scale(1.02); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35); }
         .kanban-column h2 { color: var(--column-header-text); text-transform: uppercase; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.6rem; border-bottom: 2px solid rgba(255, 255, 255, 0.2); padding-bottom: 0.75rem; margin-bottom: 1.25rem; text-shadow: var(--text-shadow-light); }
         #nitin-todo h2, #nitin-done h2 { color: var(--nitin-accent); }
         #sathu-todo h2, #sathu-done h2 { color: var(--sathu-accent); }
-        .kanban-task { background-color: var(--task-bg); color: var(--task-text); border-radius: 0.5rem; padding: 0.8rem 1.1rem; padding-right: 2.5rem; margin-bottom: 1rem; cursor: grab; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: all 0.25s ease-in-out; word-break: break-word; position: relative; border-left: 5px solid var(--accent-todo); }
+
+
+        .kanban-task {
+            background-color: var(--task-bg); color: var(--task-text); border-radius: 0.5rem;
+            padding: 0.8rem 1.1rem; padding-right: 2.5rem; /* Ensure space for delete button */
+            margin-bottom: 1rem; cursor: grab; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.25s ease-in-out; word-break: break-word; position: relative;
+            border-left: 5px solid var(--accent-todo);
+        }
         #nitin-todo .kanban-task[data-assigned-user="nitin"] { border-left-color: var(--nitin-accent); }
         #sathu-todo .kanban-task[data-assigned-user="sathu"] { border-left-color: var(--sathu-accent); }
         #nitin-done .kanban-task, #sathu-done .kanban-task { border-left-color: var(--accent-done); }
+
         .task-content-display { }
-        .task-time-info { font-size: 0.8rem; color: #475569; margin-top: 0.4rem; display: block; font-weight: 600; }
-        .task-time-info .duration { color: #57534e; margin-left: 0.5rem; font-weight: 500; }
-        .task-completion-date { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; display: block; }
-        .kanban-task:active:not(.editing) { cursor: grabbing; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); transform: scale(1.03); }
-        .dragging { opacity: 0.5; transform: rotate(5deg) scale(1.08) skew(-5deg, -2deg); }
-        .drag-over { background-color: rgba(70, 88, 116, 0.8); transform: scale(1.01); }
-        .task-edit-form { display: flex; flex-direction: column; gap: 0.6rem; }
-        .task-edit-form input[type="text"], .task-edit-form input[type="time"] { width: 100%; border: 1px solid #94a3b8; border-radius: 0.375rem; padding: 0.4rem 0.6rem; font-size: 0.875rem; background-color: #f8fafc; color: #1e293b; }
-        .task-edit-form .edit-time-inputs { display: flex; gap: 0.6rem; }
-        .task-edit-form .edit-time-inputs > div { flex-grow: 1; }
-        .task-edit-form .edit-buttons { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.6rem; }
-        .task-edit-form button { padding: 0.3rem 0.7rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 700; transition: all 0.2s ease; border: none; cursor: pointer; text-transform: uppercase; }
-        .edit-save-btn { background-color: #16a34a; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .edit-save-btn:hover { background-color: #15803d; transform: scale(1.05); box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
-        .edit-cancel-btn { background-color: #94a3b8; color: #1e293b; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .edit-cancel-btn:hover { background-color: #64748b; transform: scale(1.05); box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
-        .delete-task-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: #fca5a5; font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0; opacity: 0.4; transition: all 0.2s ease; z-index: 10; }
-        .kanban-task:hover .delete-task-btn { opacity: 0.8; }
-        .delete-task-btn:hover { opacity: 1; color: #ef4444; transform: scale(1.15) rotate(10deg); }
-        .kanban-task.editing { cursor: default; border-left-color: var(--button-primary-bg); }
-        .notes-view { background-color: var(--notes-bg); padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); max-width: 900px; margin: 1rem auto; }
-        .notes-view h3 { color: var(--notes-header); text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; text-shadow: var(--text-shadow-medium); }
-        .notes-section { margin-bottom: 2rem; }
-        .notes-section h4 { color: var(--column-header-text); font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2); padding-bottom: 0.5rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
-        .notes-form { /* Styles remain same */ }
-        @media (min-width: 640px) { .notes-form { /* Styles remain same */ } }
-        .notes-form label { /* Styles remain same */ text-shadow: 1px 1px 1px rgba(0,0,0,0.3); }
-        /* Input field background/text color fix for Notes */
-        .notes-form input[type="text"],
-        .notes-form select,
-        .freeform-notes-area textarea {
+        .task-time-info { /* Styles remain same */ }
+        .task-time-info .duration { /* Styles remain same */ }
+        .task-completion-date { /* Styles remain same */ }
+        .kanban-task:active:not(.editing) { /* Styles remain same */ }
+        .dragging { /* Styles remain same */ }
+        .drag-over { /* Styles remain same */ }
+
+         /* Edit/Delete Styles */
+         .task-edit-form { /* Styles remain same */ }
+         .task-edit-form input[type="text"], .task-edit-form input[type="time"] { /* Styles remain same */ }
+         .task-edit-form .edit-time-inputs { /* Styles remain same */ }
+         .task-edit-form .edit-time-inputs > div { /* Styles remain same */ }
+         .task-edit-form .edit-buttons { /* Styles remain same */ }
+         .task-edit-form button { /* Styles remain same */ }
+         .edit-save-btn { /* Styles remain same */ }
+         .edit-save-btn:hover { /* Styles remain same */ }
+         .edit-cancel-btn { /* Styles remain same */ }
+         .edit-cancel-btn:hover { /* Styles remain same */ }
+         /* Delete Button Position Fix */
+         .delete-task-btn {
+             position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none;
+             color: #fca5a5; font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0;
+             opacity: 0.4; transition: all 0.2s ease; z-index: 10;
+         }
+         .kanban-task:hover .delete-task-btn { opacity: 0.8; }
+         .delete-task-btn:hover { opacity: 1; color: #ef4444; transform: scale(1.15) rotate(10deg); }
+         .kanban-task.editing { /* Styles remain same */ }
+
+         /* --- Notes Page Styles --- */
+         .notes-view { background-color: var(--notes-bg); padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); max-width: 900px; margin: 1rem auto; }
+         .notes-view h3 { color: var(--notes-header); text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; text-shadow: var(--text-shadow-medium); }
+         .notes-section { margin-bottom: 2rem; }
+         .notes-section h4 { color: var(--column-header-text); font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2); padding-bottom: 0.5rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+         .notes-form { /* Styles remain same */ }
+         @media (min-width: 640px) { .notes-form { /* Styles remain same */ } }
+         .notes-form label { /* Styles remain same */ text-shadow: 1px 1px 1px rgba(0,0,0,0.3); }
+         /* Input field background/text color fix for Notes */
+         .notes-form input[type="text"],
+         .notes-form select,
+         .freeform-notes-area textarea {
              width: 100%; border: 1px solid var(--input-border); border-radius: 0.5rem; padding: 0.6rem 0.9rem;
              box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.1); font-size: 0.9rem;
              background-color: var(--input-bg) !important; /* Use important */
              color: var(--input-text) !important;
-             -webkit-appearance: none; /* Attempt to remove default iOS styling */
-             appearance: none;
+             -webkit-appearance: none; appearance: none;
          }
-        .notes-form select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
-        .notes-form button { /* Styles remain same */ }
-        .notes-form button:hover { /* Styles remain same */ }
-        .prioritized-task-list { /* Styles remain same */ }
-        .prioritized-task-item { /* Styles remain same */ }
-        .prioritized-task-item span { /* Styles remain same */ }
-        .priority-badge { /* Styles remain same */ }
-        .priority-Mandatory { /* Styles remain same */ }
-        .priority-Moderate { /* Styles remain same */ }
-        .priority-Chill { /* Styles remain same */ }
-        .delete-note-task-btn { /* Styles remain same */ }
-        .delete-note-task-btn:hover { /* Styles remain same */ }
-        .freeform-notes-area textarea { min-height: 150px; resize: vertical; margin-bottom: 0.75rem; }
-        .freeform-notes-area button { /* Styles remain same */ }
-        .freeform-notes-area button:hover { /* Styles remain same */ }
+         .notes-form select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
+         .notes-form button { /* Styles remain same */ }
+         .notes-form button:hover { /* Styles remain same */ }
+         .prioritized-task-list { /* Styles remain same */ }
+         .prioritized-task-item { /* Styles remain same */ }
+         .prioritized-task-item span { /* Styles remain same */ }
+         .priority-badge { /* Styles remain same */ }
+         .priority-Mandatory { /* Styles remain same */ }
+         .priority-Moderate { /* Styles remain same */ }
+         .priority-Chill { /* Styles remain same */ }
+         .delete-note-task-btn { /* Styles remain same */ }
+         .delete-note-task-btn:hover { /* Styles remain same */ }
+         .freeform-notes-area textarea { min-height: 150px; resize: vertical; margin-bottom: 0.75rem; }
+         .freeform-notes-area button { /* Styles remain same */ }
+         .freeform-notes-area button:hover { /* Styles remain same */ }
+
+         /* --- Celebration Pop-up --- */
+         .celebration-popup {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+            background-color: var(--celebration-bg); color: var(--celebration-text);
+            padding: 1.5rem 2.5rem; border-radius: 1rem; font-size: 1.5rem; font-weight: 700;
+            font-family: 'Poppins', sans-serif; z-index: 10000; pointer-events: none; opacity: 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            animation: celebration-pop 2s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+         }
+         @keyframes celebration-pop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            25% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+         }
 
     </style>
 </head>
@@ -305,7 +354,24 @@
         const PRIORITY_MAP = { "Mandatory": 3, "Moderate": 2, "Chill": 1 };
 
         // --- Motivational Quotes ---
-        const motivationalQuotes = [ "Believe you can and you're halfway there. - Theodore Roosevelt", "The journey of a thousand miles begins with a single step. - Lao Tzu", "What lies behind us and what lies before us are tiny matters compared to what lies within us. - Ralph Waldo Emerson", "Your task is not to seek for love, but merely to seek and find all the barriers within yourself that you have built against it. - Rumi", "The mind is everything. What you think you become. - Buddha", "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment. - Buddha", "Act as if what you do makes a difference. It does. - William James", "You are never too old to set another goal or to dream a new dream. - C.S. Lewis", "The best way to predict the future is to create it. - Peter Drucker", "Our greatest glory is not in never failing, but in rising up every time we fail. - Ralph Waldo Emerson", "Know thyself. - Socrates", "Peace comes from within. Do not seek it without. - Buddha", "The only true wisdom is in knowing you know nothing. - Socrates", "When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love. - Marcus Aurelius", "Turn your wounds into wisdom. - Oprah Winfrey", "The only way to do great work is to love what you do. - Steve Jobs", "Your talent determines what you can do. Your motivation determines how much you are willing to do. Your attitude determines how well you do it. - Lou Holtz", "Don’t limit yourself. Many people limit themselves to what they think they can do. You can go as far as your mind lets you. What you believe, remember, you can achieve. - Mary Kay Ash", "It's hard to beat a person who never gives up. - Babe Ruth", "If you don't sacrifice for what you want, what you want becomes the sacrifice. - Unknown", "I am not a product of my circumstances. I am a product of my decisions. - Stephen R. Covey", "The only way out is in. - Sadhguru", "Responsibility is not a burden; it is a tremendous possibility. - Sadhguru", "If you resist change, you resist life. - Sadhguru", "Don't be dead serious about your life - it's just a play. - Sadhguru", "The sign of intelligence is that you are constantly wondering. Idiots are always dead sure about every damn thing they are doing in their life. - Sadhguru", "Talent without working hard is nothing. - Cristiano Ronaldo", "Your love makes me strong, your hate makes me unstoppable. - Cristiano Ronaldo", "You have to fight to reach your dream. You have to sacrifice and work hard for it. - Lionel Messi", "Whether it’s a friendly match, or for points, or a final, or any game – I play the same. I’m always trying to be my best, first for my team, for myself, for the fans, and to try and win. - Lionel Messi", "Self-belief and hard work will always earn you success. - Virat Kohli", "The people you choose to have around you make all the difference. - Virat Kohli", "I hated every minute of training, but I said, 'Don't quit. Suffer now and live the rest of your life as a champion.' - Muhammad Ali", "He who is not courageous enough to take risks will accomplish nothing in life. - Muhammad Ali", "Champions aren't made in gyms. Champions are made from something they have deep inside them—a desire, a dream, a vision. - Muhammad Ali", "Success is stumbling from failure to failure with no loss of enthusiasm. While persistence isn't always the key, passion and hard work is. - Anirudh Ravichander (Paraphrased common sentiment)", "Music is language. It has the power to transcend boundaries. - A. R. Rahman", "Your inner voice is the voice of divinity. To hear it, we need to be in solitude, even in crowded places. - A. R. Rahman", "Be original and find your identity. The world will follow. - A. R. Rahman (Inspired by his philosophy)" ];
+        // --- Motivational Quotes --- (Mind, Time, Life Focus)
+const motivationalQuotes = [
+    "The mind is everything. What you think you become. - Buddha",
+    "Whether you think you can, or you think you can't – you're right. - Henry Ford",
+    "The only limit to our realization of tomorrow will be our doubts of today. - Franklin D. Roosevelt",
+    "Your time is limited, so don't waste it living someone else's life. - Steve Jobs",
+    "The trouble is, you think you have time. - Buddha",
+    "Lost time is never found again. - Benjamin Franklin",
+    "Time is what we want most, but what we use worst. - William Penn",
+    "The purpose of life, after all, is to live it, to taste experience to the utmost, to reach out eagerly and without fear for newer and richer experience. - Eleanor Roosevelt",
+    "Life is not a problem to be solved, but a reality to be experienced. - Soren Kierkegaard",
+    "In the end, it's not the years in your life that count. It's the life in your years. - Abraham Lincoln",
+    "Get busy living or get busy dying. - Stephen King (from The Shawshank Redemption)",
+    "Very little is needed to make a happy life; it is all within yourself, in your way of thinking. - Marcus Aurelius",
+    "You have power over your mind – not outside events. Realize this, and you will find strength. - Marcus Aurelius",
+    "The two most important days in your life are the day you are born and the day you find out why. - Mark Twain",
+    "Don't be pushed around by the fears in your mind. Be led by the dreams in your heart. - Roy T. Bennett"
+];
         let currentQuoteIndex = -1;
 
         // --- DOM Elements ---
@@ -345,22 +411,17 @@
         function exitEditMode(taskElement) { const editForm = taskElement.querySelector('.task-edit-form'); if (editForm) editForm.remove(); const displayContent = taskElement.querySelector('.task-content-display'); if (displayContent) displayContent.style.display = ''; taskElement.classList.remove('editing'); taskElement.setAttribute('draggable', 'true'); }
         async function saveEdit(taskElement, textInput, startTimeInput, endTimeInput) { const newText = textInput.value.trim(); const newStartTime = startTimeInput.value; const newEndTime = endTimeInput.value; if (newText === '') { alert('Task description cannot be empty.'); textInput.focus(); return; } if (!newStartTime) { alert('Please enter a start time.'); startTimeInput.focus(); return; } if (!newEndTime) { alert('Please enter an end time.'); endTimeInput.focus(); return; } if (newStartTime >= newEndTime) { alert('End time must be after start time.'); endTimeInput.focus(); return; } taskElement.dataset.text = newText; taskElement.dataset.startTime = newStartTime; taskElement.dataset.endTime = newEndTime; const completionDate = taskElement.dataset.completionDate || null; const assignedUser = taskElement.dataset.assignedUser; const displayContent = taskElement.querySelector('.task-content-display'); if (displayContent) { while (displayContent.firstChild) { displayContent.removeChild(displayContent.firstChild); } const updatedDisplayData = { text: newText, startTime: newStartTime, endTime: newEndTime, completionDate: completionDate }; const newDisplay = createTaskDisplayContent(updatedDisplayData); while (newDisplay.firstChild) { displayContent.appendChild(newDisplay.firstChild); } } exitEditMode(taskElement); await saveCurrentBoardState(); console.log("Task edited and saved:", taskElement.id); }
         function cancelEdit(taskElement) { exitEditMode(taskElement); console.log("Task edit cancelled:", taskElement.id); }
-
-        /** Loads and displays tasks for the given dateString - FINAL FIX for loading text */
         async function displayTasksForDate(dateString) {
             if (!db) { selectedDateDisplay.textContent = "Database not connected."; return; }
             currentSelectedDate = dateString;
-            const formattedDate = formatDisplayDate(dateString); // Format date once
-
-            // Set loading text immediately
+            const formattedDate = formatDisplayDate(dateString);
+            // Set loading text *before* fetching
             selectedDateDisplay.textContent = `Loading tasks for ${formattedDate}...`;
-            if(dateSelector) dateSelector.value = dateString; // Update selector if it exists
+            if(dateSelector) dateSelector.value = dateString;
             clearBoard();
-
             try {
                 const tasksByUserData = await loadTasksFromFirestore(dateString);
-
-                // Populate boards (logic remains same)
+                // Populate boards
                 ['todo', 'done'].forEach(columnId => {
                     const nitinCol = document.getElementById(`nitin-${columnId}`);
                     if (nitinCol && tasksByUserData.nitin[columnId]) {
@@ -377,23 +438,22 @@
                         });
                     }
                 });
-                 // ** CRUCIAL FIX: Update text AFTER tasks are potentially rendered **
-                 selectedDateDisplay.textContent = `Showing tasks for: ${formattedDate}`;
-
+                // ** FINAL FIX: Update text only AFTER successful loading/rendering **
+                selectedDateDisplay.textContent = `Showing tasks for: ${formattedDate}`;
             } catch (error) {
                 console.error("Error displaying tasks:", error);
-                // Update text even if there's an error
+                // Update text on error too
                 selectedDateDisplay.textContent = `Error loading tasks for ${formattedDate}`;
             }
             // No checkAndMoveTasks needed
         }
-
         async function saveCurrentBoardState() { if (!db) { console.error("Firestore not initialized."); return; } if (!currentSelectedDate) { console.log("No date selected."); return; } const tasksByUserData = { nitin: { todo: [], done: [] }, sathu: { todo: [], done: [] } }; ['todo', 'done'].forEach(status => { const nitinCol = document.getElementById(`nitin-${status}`); if (nitinCol) { nitinCol.querySelectorAll('.kanban-task').forEach(task => { const taskData = { text: task.dataset.text || '', startTime: task.dataset.startTime || null, endTime: task.dataset.endTime || null, completionDate: task.dataset.completionDate || null }; if (taskData.text) tasksByUserData.nitin[status].push(taskData); }); } const sathuCol = document.getElementById(`sathu-${status}`); if (sathuCol) { sathuCol.querySelectorAll('.kanban-task').forEach(task => { const taskData = { text: task.dataset.text || '', startTime: task.dataset.startTime || null, endTime: task.dataset.endTime || null, completionDate: task.dataset.completionDate || null }; if (taskData.text) tasksByUserData.sathu[status].push(taskData); }); } }); await saveTasksToFirestore(currentSelectedDate, tasksByUserData); }
         async function addTask() { if (!db) { alert("Database not connected."); return; } console.log("addTask function called."); const taskInput = document.getElementById('new-task-input'); const startTimeInput = document.getElementById('new-task-start-time'); const endTimeInput = document.getElementById('new-task-end-time'); const nitinCheckbox = document.getElementById('user-nitin'); const sathuCheckbox = document.getElementById('user-sathu'); if (!taskInput || !startTimeInput || !endTimeInput || !nitinCheckbox || !sathuCheckbox) { console.error("Error: Input/user elements not found."); return; } const assignedUsers = []; if (nitinCheckbox.checked) { assignedUsers.push('nitin'); } if (sathuCheckbox.checked) { assignedUsers.push('sathu'); } if (assignedUsers.length === 0) { alert("Please assign the task to at least one user."); return; } const taskText = taskInput.value.trim(); const startTime = startTimeInput.value; const endTime = endTimeInput.value; if (taskText === '') { alert('Please enter a task description.'); taskInput.focus(); return; } if (!startTime) { alert('Please enter a start time.'); startTimeInput.focus(); return; } if (!endTime) { alert('Please enter an end time.'); endTimeInput.focus(); return; } if (startTime >= endTime) { alert('End time must be after start time.'); endTimeInput.focus(); return; } if (!currentSelectedDate) { alert('Please select a date first.'); return; } const newTaskData = { text: taskText, startTime: startTime, endTime: endTime, completionDate: null }; let elementAdded = false; assignedUsers.forEach(user => { const targetTodoColumn = document.getElementById(`${user}-todo`); if (targetTodoColumn) { const taskElementForUser = createTaskElement(newTaskData, user); if (taskElementForUser) { targetTodoColumn.appendChild(taskElementForUser); elementAdded = true; } else { console.error(`Error creating task element for user ${user}.`); } } else { console.error(`Error: Todo column for user ${user} not found.`); } }); if (elementAdded) { taskInput.value = ''; startTimeInput.value = ''; endTimeInput.value = ''; nitinCheckbox.checked = false; sathuCheckbox.checked = false; } await saveCurrentBoardState(); console.log(`addTask completed for "${taskText}" assigned to ${assignedUsers.join(', ')}`); /* No checkAndMoveTasks */ }
         function handleDragOver(event) { const taskElement = event.target.closest('.kanban-task'); if (taskElement && taskElement.classList.contains('editing')) { return; } event.preventDefault(); const targetColumn = event.target.closest('.kanban-column'); if (targetColumn && !targetColumn.classList.contains('drag-over')) { targetColumn.classList.add('drag-over'); } }
         function handleDragLeave(event) { const targetColumn = event.target.closest('.kanban-column'); if (targetColumn) targetColumn.classList.remove('drag-over'); }
-        async function handleDrop(event) { event.preventDefault(); const targetColumn = event.target.closest('.kanban-column'); const targetTask = event.target.closest('.kanban-task'); if (targetTask && targetTask.classList.contains('editing')) { targetColumn?.classList.remove('drag-over'); return; } if (targetColumn && draggedTask) { if (draggedTask === targetTask) { targetColumn.classList.remove('drag-over'); return; } const targetColumnId = targetColumn.id; const targetUser = targetColumnId.startsWith('nitin-') ? 'nitin' : (targetColumnId.startsWith('sathu-') ? 'sathu' : null); const currentAssignedUser = draggedTask.dataset.assignedUser; if (targetUser !== currentAssignedUser) { console.log(`Prevented moving task between users: ${currentAssignedUser} to ${targetUser}`); targetColumn.classList.remove('drag-over'); return; } if (!targetColumnId.endsWith('-todo') && !targetColumnId.endsWith('-done')) { console.log(`Prevented drop into invalid column: ${targetColumnId}`); targetColumn.classList.remove('drag-over'); return; } const previousColumn = draggedTask.parentElement; let completionDate = draggedTask.dataset.completionDate || null; const existingDateSpan = draggedTask.querySelector('.task-completion-date'); if (existingDateSpan) existingDateSpan.remove(); if (targetColumnId.endsWith('-done')) { completionDate = getCurrentDateString(BOSTON_TIMEZONE); draggedTask.dataset.completionDate = completionDate; const dateSpan = document.createElement('span'); dateSpan.classList.add('task-completion-date'); dateSpan.textContent = `Completed: ${completionDate}`; const timeInfo = draggedTask.querySelector('.task-time-info'); if (timeInfo) { timeInfo.insertAdjacentElement('afterend', dateSpan); } else { draggedTask.appendChild(dateSpan); } if (previousColumn && !previousColumn.id.endsWith('-done')) { triggerConfetti(); } } else { delete draggedTask.dataset.completionDate; completionDate = null; } targetColumn.appendChild(draggedTask); targetColumn.classList.remove('drag-over'); await saveCurrentBoardState(); } else if (targetColumn) { targetColumn.classList.remove('drag-over'); } }
+        async function handleDrop(event) { event.preventDefault(); const targetColumn = event.target.closest('.kanban-column'); const targetTask = event.target.closest('.kanban-task'); if (targetTask && targetTask.classList.contains('editing')) { targetColumn?.classList.remove('drag-over'); return; } if (targetColumn && draggedTask) { if (draggedTask === targetTask) { targetColumn.classList.remove('drag-over'); return; } const targetColumnId = targetColumn.id; const targetUser = targetColumnId.startsWith('nitin-') ? 'nitin' : (targetColumnId.startsWith('sathu-') ? 'sathu' : null); const currentAssignedUser = draggedTask.dataset.assignedUser; if (targetUser !== currentAssignedUser) { console.log(`Prevented moving task between users: ${currentAssignedUser} to ${targetUser}`); targetColumn.classList.remove('drag-over'); return; } if (!targetColumnId.endsWith('-todo') && !targetColumnId.endsWith('-done')) { console.log(`Prevented drop into invalid column: ${targetColumnId}`); targetColumn.classList.remove('drag-over'); return; } const previousColumn = draggedTask.parentElement; let completionDate = draggedTask.dataset.completionDate || null; const existingDateSpan = draggedTask.querySelector('.task-completion-date'); if (existingDateSpan) existingDateSpan.remove(); let justCompleted = false; if (targetColumnId.endsWith('-done')) { if (!draggedTask.dataset.completionDate) { justCompleted = true; completionDate = getCurrentDateString(BOSTON_TIMEZONE); draggedTask.dataset.completionDate = completionDate; const dateSpan = document.createElement('span'); dateSpan.classList.add('task-completion-date'); dateSpan.textContent = `Completed: ${completionDate}`; const timeInfo = draggedTask.querySelector('.task-time-info'); if (timeInfo) { timeInfo.insertAdjacentElement('afterend', dateSpan); } else { draggedTask.appendChild(dateSpan); } } } else { delete draggedTask.dataset.completionDate; completionDate = null; } targetColumn.appendChild(draggedTask); targetColumn.classList.remove('drag-over'); await saveCurrentBoardState(); if (justCompleted) { triggerConfetti(); showCompletionCelebration(); } } else if (targetColumn) { targetColumn.classList.remove('drag-over'); } }
         function triggerConfetti() { myConfetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#f97316', '#ef4444', '#facc15', '#ffffff', '#a855f7'] }); }
+        function showCompletionCelebration() { const popup = document.createElement('div'); popup.classList.add('celebration-popup'); popup.innerHTML = '🏆 Task Complete! 🏆'; document.body.appendChild(popup); setTimeout(() => { popup.remove(); }, 2000); }
         async function archiveTaskToFirestore(taskData, assignedUser) { if (!db || !archiveCollection) { console.error("Firestore not initialized."); return; } if (!taskData.completionDate || !taskData.text || !assignedUser) { console.warn("Skipping archive for task missing data:", taskData); return; } const archiveData = { ...taskData, assignedUser: assignedUser, archivedAt: firebase.firestore.FieldValue.serverTimestamp() }; try { await archiveCollection.add(archiveData); console.log(`Task for ${assignedUser} archived:`, taskData.text); } catch (error) { console.error("Error archiving task:", error); } }
         async function runArchivingProcess() { if (!db || !tasksCollection || !archiveCollection) { console.error("Firestore not initialized."); return false; } const todayDateStr = getCurrentDateString(BOSTON_TIMEZONE); let tasksArchived = false; console.log("Running archiving process..."); try { const querySnapshot = await tasksCollection.where(firebase.firestore.FieldPath.documentId(), "<", todayDateStr).get(); if (querySnapshot.empty) { console.log("No past dates found."); return false; } const updates = []; querySnapshot.forEach(doc => { const dateString = doc.id; const tasksByUserData = doc.data(); let dayWasModified = false; const updatedTasksByUserData = { nitin: { todo: tasksByUserData.nitin?.todo || [], done: tasksByUserData.nitin?.done || [] }, sathu: { todo: tasksByUserData.sathu?.todo || [], done: tasksByUserData.sathu?.done || [] } }; if (updatedTasksByUserData.nitin.done && updatedTasksByUserData.nitin.done.length > 0) { const tasksToKeep = []; updatedTasksByUserData.nitin.done.forEach(taskData => { if (taskData.completionDate) { updates.push(archiveTaskToFirestore(taskData, 'nitin')); tasksArchived = true; dayWasModified = true; } else { tasksToKeep.push(taskData); } }); updatedTasksByUserData.nitin.done = tasksToKeep; } if (updatedTasksByUserData.sathu.done && updatedTasksByUserData.sathu.done.length > 0) { const tasksToKeep = []; updatedTasksByUserData.sathu.done.forEach(taskData => { if (taskData.completionDate) { updates.push(archiveTaskToFirestore(taskData, 'sathu')); tasksArchived = true; dayWasModified = true; } else { tasksToKeep.push(taskData); } }); updatedTasksByUserData.sathu.done = tasksToKeep; } if (dayWasModified) { updates.push(tasksCollection.doc(dateString).set(updatedTasksByUserData)); console.log(`Marked document ${dateString} for update.`); } }); await Promise.allSettled(updates); console.log("Archiving process potentially completed."); } catch (error) { console.error("Error during archiving process query:", error); } return tasksArchived; }
         function generateSummaryText(tasks) { if (!tasks || tasks.length === 0) { return "No tasks were completed on this day. Plan the next win!"; } const tasksByAssignee = tasks.reduce((acc, task) => { const user = task.assignedUser || 'unknown'; if (!acc[user]) acc[user] = []; acc[user].push(task.text); return acc; }, {}); let summary = `Recap of today's wins! `; const userSummaries = []; if (tasksByAssignee.nitin && tasksByAssignee.nitin.length > 0) { userSummaries.push(`Nitin crushed ${tasksByAssignee.nitin.length} task(s): <strong>${tasksByAssignee.nitin.join('</strong>, <strong>')}</strong>`); } if (tasksByAssignee.sathu && tasksByAssignee.sathu.length > 0) { userSummaries.push(`Sathu crushed ${tasksByAssignee.sathu.length} task(s): <strong>${tasksByAssignee.sathu.join('</strong>, <strong>')}</strong>`); } if (tasksByAssignee.unknown && tasksByAssignee.unknown.length > 0) { userSummaries.push(`Unassigned tasks completed: <strong>${tasksByAssignee.unknown.join('</strong>, <strong>')}</strong>`); } summary += userSummaries.join('. ') + (userSummaries.length > 0 ? '.' : ''); return summary + " Keep that momentum going! 🚀"; }
