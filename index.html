@@ -129,15 +129,15 @@
     <canvas id="confetti-canvas"></canvas>
     <script>
         // --- Firebase Configuration ---
-        // IMPORTANT: Replace placeholders with your actual config
+        // User's actual config pasted here:
         const firebaseConfig = {
-  apiKey: "AIzaSyCVrpXIbpjQMr_UZJPbFzQJl0xPX52qVhM",
-  authDomain: "sng-hustle-board.firebaseapp.com",
-  projectId: "sng-hustle-board",
-  storageBucket: "sng-hustle-board.firebasestorage.app",
-  messagingSenderId: "46213905924",
-  appId: "1:46213905924:web:6a6d48b11e0f36ce3e7f51"
-};
+          apiKey: "AIzaSyCVrpXIbpjQMr_UZJPbFzQJl0xPX52qVhM",
+          authDomain: "sng-hustle-board.firebaseapp.com",
+          projectId: "sng-hustle-board",
+          storageBucket: "sng-hustle-board.appspot.com", // Corrected bucket name if needed
+          messagingSenderId: "46213905924",
+          appId: "1:46213905924:web:6a6d48b11e0f36ce3e7f51"
+        };
 
         // --- Initialize Firebase ---
         let db; // Declare db globally
@@ -195,7 +195,8 @@
                 }
             } catch (error) {
                 console.error("Error getting document:", error);
-                alert("Error loading tasks from the database.");
+                // Avoid alert spamming, just log the error
+                // alert("Error loading tasks from the database.");
                 return { todo: [], inprogress: [], done: [] };
             }
         }
@@ -254,7 +255,7 @@
         function cancelEdit(taskElement) { exitEditMode(taskElement); console.log("Task edit cancelled:", taskElement.id); }
 
         async function displayTasksForDate(dateString) {
-             if (!db) { selectedDateDisplay.textContent = "Database not connected."; return; } // Check DB connection
+             if (!db) { selectedDateDisplay.textContent = "Database not connected."; return; }
              currentSelectedDate = dateString;
              selectedDateDisplay.textContent = `Loading tasks for ${formatDisplayDate(dateString)}...`;
              dateSelector.value = dateString;
@@ -290,17 +291,17 @@
         }
 
         async function addTask() {
-             if (!db) { alert("Database not connected. Cannot add task."); return; } // Check DB connection
+             if (!db) { alert("Database not connected. Cannot add task."); return; }
              console.log("addTask function called.");
              const taskInput = document.getElementById('new-task-input'); const startTimeInput = document.getElementById('new-task-start-time'); const endTimeInput = document.getElementById('new-task-end-time'); const currentTodoColumn = document.getElementById('todo');
              if (!taskInput || !startTimeInput || !endTimeInput || !currentTodoColumn) { console.error("Error: Input/column elements not found."); return; }
              const taskText = taskInput.value.trim(); const startTime = startTimeInput.value; const endTime = endTimeInput.value;
              if (taskText === '') { alert('Please enter a task description.'); taskInput.focus(); return; } if (!startTime) { alert('Please enter a start time.'); startTimeInput.focus(); return; } if (!endTime) { alert('Please enter an end time.'); endTimeInput.focus(); return; } if (startTime >= endTime) { alert('End time must be after start time.'); endTimeInput.focus(); return; } if (!currentSelectedDate) { alert('Please select a date first.'); return; }
              const newTaskData = { text: taskText, startTime: startTime, endTime: endTime, completionDate: null };
-             const newTaskElement = createTaskElement(newTaskData); // Create element first
+             const newTaskElement = createTaskElement(newTaskData);
              if (newTaskElement) { currentTodoColumn.appendChild(newTaskElement); } else { console.error("Error creating task element."); return; }
              taskInput.value = ''; startTimeInput.value = ''; endTimeInput.value = '';
-             await saveCurrentBoardState(); // Save the whole board state after adding visually
+             await saveCurrentBoardState();
              console.log(`addTask completed and saved for "${taskText}"`);
              checkAndMoveTasks();
         }
@@ -350,8 +351,11 @@
                         if (dayWasModified) { const updatedTasksForDay = { ...tasksForDay, done: tasksToKeepInDone }; updates.push(tasksCollection.doc(dateString).set(updatedTasksForDay)); console.log(`Marked document ${dateString} for update (removing archived tasks).`); }
                     }
                 });
-                await Promise.all(updates); console.log("Archiving process completed.");
-            } catch (error) { console.error("Error during archiving process:", error); }
+                // Use Promise.allSettled to handle potential individual errors during archiving/updating
+                const results = await Promise.allSettled(updates);
+                results.forEach(result => { if (result.status === 'rejected') console.error("Error during batch update/archive:", result.reason); });
+                console.log("Archiving process potentially completed (check logs for errors).");
+            } catch (error) { console.error("Error during archiving process query:", error); }
             return tasksArchived;
         }
 
@@ -375,7 +379,7 @@
 
         // --- Automatic Task Movement ---
         async function checkAndMoveTasks() {
-             if (!db) { return; } // Don't run if DB not connected
+             if (!db) { return; }
              const todayDateStr = getCurrentDateString(BOSTON_TIMEZONE); if (currentSelectedDate !== todayDateStr) { return; }
              const currentTimeStr = getCurrentTimeString(BOSTON_TIMEZONE); const todoCol = document.getElementById('todo'); const inProgressCol = document.getElementById('inprogress'); if (!todoCol || !inProgressCol) { console.error("Cannot find columns for auto-move."); return; }
              const tasksInTodo = todoCol.querySelectorAll('.kanban-task'); let taskMoved = false;
@@ -394,8 +398,15 @@
             updateTimeDisplay(); setInterval(updateTimeDisplay, 60000);
             displayMotivationalQuote();
 
-            // Wait for Firebase to potentially initialize if async operations are needed early
-            // However, core logic now checks if 'db' exists before proceeding
+            // Wait short delay for Firebase init, then proceed
+            // This simple delay isn't ideal but helps in basic scenarios
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            if (!db) {
+                console.error("DB not initialized after delay. Aborting further setup.");
+                selectedDateDisplay.textContent = "Database Connection Failed!";
+                return; // Stop if DB connection failed
+            }
 
             try { await runArchivingProcess(); } catch (error) { console.error("Error during initial archiving:", error); }
 
