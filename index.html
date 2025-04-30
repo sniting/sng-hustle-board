@@ -26,7 +26,7 @@
             --task-bg: #ffffff; --task-text: #1f2937;
             --accent-todo: #f59e0b; --accent-done: #22c55e;
             --button-primary-bg: #dc2626; --button-primary-hover: #b91c1c;
-            --info-box-bg: rgba(30, 41, 59, 0.88);
+            --info-box-bg: rgba(30, 41, 59, 0.9); /* Increased opacity */
             --info-box-border: rgba(255, 255, 255, 0.2);
             --info-box-text: #f1f5f9;
             --input-bg: #1e293b; /* slate-800 */
@@ -107,8 +107,11 @@
          #add-task-form input[type="time"] {
              width: 100%; border: 1px solid var(--input-border); border-radius: 0.5rem; padding: 0.6rem 0.9rem;
              box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.1); font-size: 0.9rem;
-             background-color: var(--input-bg); color: var(--input-text);
+             background-color: var(--input-bg) !important; /* Override defaults */
+             color: var(--input-text) !important;
+             -webkit-appearance: none; appearance: none;
          }
+         #add-task-form input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); }
          #add-task-form button { /* Styles remain same */ }
          #add-task-form button:hover { /* Styles remain same */ }
          #user-selector-container fieldset { /* Styles remain same */ }
@@ -122,108 +125,75 @@
             display: grid; grid-template-columns: 1fr; gap: 2.5rem; margin-top: 2rem;
             max-width: 768px; margin-left: auto; margin-right: auto;
          }
-
         .user-board { }
         .user-board-header { text-align: center; font-size: 1.5rem; font-weight: 800; color: var(--column-header-text); margin-bottom: 1.5rem; text-shadow: var(--text-shadow-heavy); }
         #nitin-board .user-board-header { color: var(--nitin-accent); }
         #sathu-board .user-board-header { color: var(--sathu-accent); }
-
-        .kanban-columns-grid {
-             display: grid; grid-template-columns: 1fr; gap: 1.5rem;
-        }
-        @media (min-width: 640px) {
-            .kanban-columns-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        }
-
-        .kanban-column {
-            min-height: 350px; background-color: var(--column-bg); backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.75rem; padding: 1.25rem;
-            transition: all 0.35s ease-out; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
-        }
+        .kanban-columns-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 640px) { .kanban-columns-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
+        .kanban-column { min-height: 350px; background-color: var(--column-bg); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.75rem; padding: 1.25rem; transition: all 0.35s ease-out; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25); }
         .kanban-column:hover { transform: scale(1.02); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35); }
         .kanban-column h2 { color: var(--column-header-text); text-transform: uppercase; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.6rem; border-bottom: 2px solid rgba(255, 255, 255, 0.2); padding-bottom: 0.75rem; margin-bottom: 1.25rem; text-shadow: var(--text-shadow-light); }
         #nitin-todo h2, #nitin-done h2 { color: var(--nitin-accent); }
         #sathu-todo h2, #sathu-done h2 { color: var(--sathu-accent); }
-
-
-        .kanban-task {
-            background-color: var(--task-bg); color: var(--task-text); border-radius: 0.5rem;
-            padding: 0.8rem 1.1rem; padding-right: 2.5rem; /* Ensure space for delete button */
-            margin-bottom: 1rem; cursor: grab; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.25s ease-in-out; word-break: break-word; position: relative;
-            border-left: 5px solid var(--accent-todo);
-        }
+        .kanban-task { background-color: var(--task-bg); color: var(--task-text); border-radius: 0.5rem; padding: 0.8rem 1.1rem; padding-right: 2.5rem; margin-bottom: 1rem; cursor: grab; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: all 0.25s ease-in-out; word-break: break-word; position: relative; border-left: 5px solid var(--accent-todo); }
         #nitin-todo .kanban-task[data-assigned-user="nitin"] { border-left-color: var(--nitin-accent); }
         #sathu-todo .kanban-task[data-assigned-user="sathu"] { border-left-color: var(--sathu-accent); }
         #nitin-done .kanban-task, #sathu-done .kanban-task { border-left-color: var(--accent-done); }
-
         .task-content-display { }
-        .task-time-info { /* Styles remain same */ }
-        .task-time-info .duration { /* Styles remain same */ }
-        .task-completion-date { /* Styles remain same */ }
-        .kanban-task:active:not(.editing) { /* Styles remain same */ }
-        .dragging { /* Styles remain same */ }
-        .drag-over { /* Styles remain same */ }
-
-         /* Edit/Delete Styles */
-         .task-edit-form { /* Styles remain same */ }
-         .task-edit-form input[type="text"], .task-edit-form input[type="time"] { /* Styles remain same */ }
-         .task-edit-form .edit-time-inputs { /* Styles remain same */ }
-         .task-edit-form .edit-time-inputs > div { /* Styles remain same */ }
-         .task-edit-form .edit-buttons { /* Styles remain same */ }
-         .task-edit-form button { /* Styles remain same */ }
-         .edit-save-btn { /* Styles remain same */ }
-         .edit-save-btn:hover { /* Styles remain same */ }
-         .edit-cancel-btn { /* Styles remain same */ }
-         .edit-cancel-btn:hover { /* Styles remain same */ }
-         /* Delete Button Position Fix */
-         .delete-task-btn {
-             position: absolute;
-             top: 0.5rem;
-             right: 0.5rem;
-             background: none; border: none; color: #fca5a5; font-size: 1.3rem;
-             line-height: 1; cursor: pointer; padding: 0;
-             opacity: 0.4; transition: all 0.2s ease; z-index: 10;
-         }
-         .kanban-task:hover .delete-task-btn { opacity: 0.8; }
-         .delete-task-btn:hover { opacity: 1; color: #ef4444; transform: scale(1.15) rotate(10deg); }
-         .kanban-task.editing { /* Styles remain same */ }
-
-         /* --- Notes Page Styles --- */
-         .notes-view { background-color: var(--notes-bg); padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); max-width: 900px; margin: 1rem auto; }
-         .notes-view h3 { color: var(--notes-header); text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; text-shadow: var(--text-shadow-medium); }
-         .notes-section { margin-bottom: 2rem; }
-         .notes-section h4 { color: var(--column-header-text); font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2); padding-bottom: 0.5rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
-         .notes-form { /* Styles remain same */ }
-         @media (min-width: 640px) { .notes-form { /* Styles remain same */ } }
-         .notes-form label { /* Styles remain same */ }
-         /* Input field background/text color fix */
-         .notes-form input[type="text"],
-         .notes-form select {
+        .task-time-info { font-size: 0.8rem; color: #475569; margin-top: 0.4rem; display: block; font-weight: 600; }
+        .task-time-info .duration { color: #57534e; margin-left: 0.5rem; font-weight: 500; }
+        .task-completion-date { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; display: block; }
+        .kanban-task:active:not(.editing) { cursor: grabbing; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); transform: scale(1.03); }
+        .dragging { opacity: 0.5; transform: rotate(5deg) scale(1.08) skew(-5deg, -2deg); }
+        .drag-over { background-color: rgba(70, 88, 116, 0.8); transform: scale(1.01); }
+        .task-edit-form { display: flex; flex-direction: column; gap: 0.6rem; }
+        .task-edit-form input[type="text"], .task-edit-form input[type="time"] { width: 100%; border: 1px solid #94a3b8; border-radius: 0.375rem; padding: 0.4rem 0.6rem; font-size: 0.875rem; background-color: #f8fafc; color: #1e293b; }
+        .task-edit-form .edit-time-inputs { display: flex; gap: 0.6rem; }
+        .task-edit-form .edit-time-inputs > div { flex-grow: 1; }
+        .task-edit-form .edit-buttons { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.6rem; }
+        .task-edit-form button { padding: 0.3rem 0.7rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 700; transition: all 0.2s ease; border: none; cursor: pointer; text-transform: uppercase; }
+        .edit-save-btn { background-color: #16a34a; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .edit-save-btn:hover { background-color: #15803d; transform: scale(1.05); box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
+        .edit-cancel-btn { background-color: #94a3b8; color: #1e293b; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .edit-cancel-btn:hover { background-color: #64748b; transform: scale(1.05); box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
+        .delete-task-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: #fca5a5; font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0; opacity: 0.4; transition: all 0.2s ease; z-index: 10; }
+        .kanban-task:hover .delete-task-btn { opacity: 0.8; }
+        .delete-task-btn:hover { opacity: 1; color: #ef4444; transform: scale(1.15) rotate(10deg); }
+        .kanban-task.editing { cursor: default; border-left-color: var(--button-primary-bg); }
+        .notes-view { background-color: var(--notes-bg); padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); max-width: 900px; margin: 1rem auto; }
+        .notes-view h3 { color: var(--notes-header); text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; text-shadow: var(--text-shadow-medium); }
+        .notes-section { margin-bottom: 2rem; }
+        .notes-section h4 { color: var(--column-header-text); font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2); padding-bottom: 0.5rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        .notes-form { /* Styles remain same */ }
+        @media (min-width: 640px) { .notes-form { /* Styles remain same */ } }
+        .notes-form label { /* Styles remain same */ text-shadow: 1px 1px 1px rgba(0,0,0,0.3); }
+        /* Input field background/text color fix for Notes */
+        .notes-form input[type="text"],
+        .notes-form select,
+        .freeform-notes-area textarea {
              width: 100%; border: 1px solid var(--input-border); border-radius: 0.5rem; padding: 0.6rem 0.9rem;
              box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.1); font-size: 0.9rem;
-             background-color: var(--input-bg); color: var(--input-text); /* Apply dark bg, light text */
+             background-color: var(--input-bg) !important; /* Use important */
+             color: var(--input-text) !important;
+             -webkit-appearance: none; /* Attempt to remove default iOS styling */
+             appearance: none;
          }
-         .notes-form select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
-         .notes-form button { /* Styles remain same */ }
-         .notes-form button:hover { /* Styles remain same */ }
-         .prioritized-task-list { /* Styles remain same */ }
-         .prioritized-task-item { /* Styles remain same */ }
-         .prioritized-task-item span { /* Styles remain same */ }
-         .priority-badge { /* Styles remain same */ }
-         .priority-Mandatory { /* Styles remain same */ }
-         .priority-Moderate { /* Styles remain same */ }
-         .priority-Chill { /* Styles remain same */ }
-         .delete-note-task-btn { /* Styles remain same */ }
-         .delete-note-task-btn:hover { /* Styles remain same */ }
-         /* Input field background/text color fix */
-         .freeform-notes-area textarea {
-             width: 100%; min-height: 150px; border: 1px solid var(--input-border); border-radius: 0.5rem; padding: 0.6rem 0.9rem;
-             font-size: 0.9rem; background-color: var(--input-bg); color: var(--input-text); /* Apply dark bg, light text */
-             resize: vertical; margin-bottom: 0.75rem;
-         }
-         .freeform-notes-area button { /* Styles remain same */ }
-         .freeform-notes-area button:hover { /* Styles remain same */ }
+        .notes-form select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
+        .notes-form button { /* Styles remain same */ }
+        .notes-form button:hover { /* Styles remain same */ }
+        .prioritized-task-list { /* Styles remain same */ }
+        .prioritized-task-item { /* Styles remain same */ }
+        .prioritized-task-item span { /* Styles remain same */ }
+        .priority-badge { /* Styles remain same */ }
+        .priority-Mandatory { /* Styles remain same */ }
+        .priority-Moderate { /* Styles remain same */ }
+        .priority-Chill { /* Styles remain same */ }
+        .delete-note-task-btn { /* Styles remain same */ }
+        .delete-note-task-btn:hover { /* Styles remain same */ }
+        .freeform-notes-area textarea { min-height: 150px; resize: vertical; margin-bottom: 0.75rem; }
+        .freeform-notes-area button { /* Styles remain same */ }
+        .freeform-notes-area button:hover { /* Styles remain same */ }
 
     </style>
 </head>
@@ -242,13 +212,13 @@
 
         <div id="hustle-board-view" class="view-container active">
             <div class="info-box-container">
-                <div id="time-date-display" class="text-base">Loading time...</div>
-                <div id="motivational-quote">Loading inspiration...</div>
+                <div id="time-date-display" class="text-base"></div>
+                <div id="motivational-quote"></div>
                 <div id="date-selector-container">
                     <label for="date-selector">Select Date:</label>
                     <input type="date" id="date-selector">
                 </div>
-                <div id="selected-date-display" class="text-lg">Loading tasks for...</div>
+                <div id="selected-date-display" class="text-lg"></div>
             </div>
             <div class="mb-10 max-w-xl mx-auto" id="add-task-form-container">
                 <h2 class="text-2xl font-bold mb-5 text-center text-slate-100">Add New Hustle</h2>
@@ -375,7 +345,49 @@
         function exitEditMode(taskElement) { const editForm = taskElement.querySelector('.task-edit-form'); if (editForm) editForm.remove(); const displayContent = taskElement.querySelector('.task-content-display'); if (displayContent) displayContent.style.display = ''; taskElement.classList.remove('editing'); taskElement.setAttribute('draggable', 'true'); }
         async function saveEdit(taskElement, textInput, startTimeInput, endTimeInput) { const newText = textInput.value.trim(); const newStartTime = startTimeInput.value; const newEndTime = endTimeInput.value; if (newText === '') { alert('Task description cannot be empty.'); textInput.focus(); return; } if (!newStartTime) { alert('Please enter a start time.'); startTimeInput.focus(); return; } if (!newEndTime) { alert('Please enter an end time.'); endTimeInput.focus(); return; } if (newStartTime >= newEndTime) { alert('End time must be after start time.'); endTimeInput.focus(); return; } taskElement.dataset.text = newText; taskElement.dataset.startTime = newStartTime; taskElement.dataset.endTime = newEndTime; const completionDate = taskElement.dataset.completionDate || null; const assignedUser = taskElement.dataset.assignedUser; const displayContent = taskElement.querySelector('.task-content-display'); if (displayContent) { while (displayContent.firstChild) { displayContent.removeChild(displayContent.firstChild); } const updatedDisplayData = { text: newText, startTime: newStartTime, endTime: newEndTime, completionDate: completionDate }; const newDisplay = createTaskDisplayContent(updatedDisplayData); while (newDisplay.firstChild) { displayContent.appendChild(newDisplay.firstChild); } } exitEditMode(taskElement); await saveCurrentBoardState(); console.log("Task edited and saved:", taskElement.id); }
         function cancelEdit(taskElement) { exitEditMode(taskElement); console.log("Task edit cancelled:", taskElement.id); }
-        async function displayTasksForDate(dateString) { if (!db) { selectedDateDisplay.textContent = "Database not connected."; return; } currentSelectedDate = dateString; selectedDateDisplay.textContent = `Loading tasks for ${formatDisplayDate(dateString)}...`; dateSelector.value = dateString; clearBoard(); try { const tasksByUserData = await loadTasksFromFirestore(dateString); selectedDateDisplay.textContent = `Showing tasks for: ${formatDisplayDate(dateString)}`; ['todo', 'done'].forEach(columnId => { const nitinCol = document.getElementById(`nitin-${columnId}`); if (nitinCol && tasksByUserData.nitin[columnId]) { tasksByUserData.nitin[columnId].forEach(taskData => { const taskElement = createTaskElement(taskData, 'nitin'); nitinCol.appendChild(taskElement); }); } const sathuCol = document.getElementById(`sathu-${columnId}`); if (sathuCol && tasksByUserData.sathu[columnId]) { tasksByUserData.sathu[columnId].forEach(taskData => { const taskElement = createTaskElement(taskData, 'sathu'); sathuCol.appendChild(taskElement); }); } }); } catch (error) { console.error("Error displaying tasks:", error); selectedDateDisplay.textContent = `Error loading tasks for ${formatDisplayDate(dateString)}`; } /* No checkAndMoveTasks needed */ }
+
+        /** Loads and displays tasks for the given dateString - FINAL FIX for loading text */
+        async function displayTasksForDate(dateString) {
+            if (!db) { selectedDateDisplay.textContent = "Database not connected."; return; }
+            currentSelectedDate = dateString;
+            const formattedDate = formatDisplayDate(dateString); // Format date once
+
+            // Set loading text immediately
+            selectedDateDisplay.textContent = `Loading tasks for ${formattedDate}...`;
+            if(dateSelector) dateSelector.value = dateString; // Update selector if it exists
+            clearBoard();
+
+            try {
+                const tasksByUserData = await loadTasksFromFirestore(dateString);
+
+                // Populate boards (logic remains same)
+                ['todo', 'done'].forEach(columnId => {
+                    const nitinCol = document.getElementById(`nitin-${columnId}`);
+                    if (nitinCol && tasksByUserData.nitin[columnId]) {
+                        tasksByUserData.nitin[columnId].forEach(taskData => {
+                            const taskElement = createTaskElement(taskData, 'nitin');
+                            nitinCol.appendChild(taskElement);
+                        });
+                    }
+                    const sathuCol = document.getElementById(`sathu-${columnId}`);
+                    if (sathuCol && tasksByUserData.sathu[columnId]) {
+                        tasksByUserData.sathu[columnId].forEach(taskData => {
+                            const taskElement = createTaskElement(taskData, 'sathu');
+                            sathuCol.appendChild(taskElement);
+                        });
+                    }
+                });
+                 // ** CRUCIAL FIX: Update text AFTER tasks are potentially rendered **
+                 selectedDateDisplay.textContent = `Showing tasks for: ${formattedDate}`;
+
+            } catch (error) {
+                console.error("Error displaying tasks:", error);
+                // Update text even if there's an error
+                selectedDateDisplay.textContent = `Error loading tasks for ${formattedDate}`;
+            }
+            // No checkAndMoveTasks needed
+        }
+
         async function saveCurrentBoardState() { if (!db) { console.error("Firestore not initialized."); return; } if (!currentSelectedDate) { console.log("No date selected."); return; } const tasksByUserData = { nitin: { todo: [], done: [] }, sathu: { todo: [], done: [] } }; ['todo', 'done'].forEach(status => { const nitinCol = document.getElementById(`nitin-${status}`); if (nitinCol) { nitinCol.querySelectorAll('.kanban-task').forEach(task => { const taskData = { text: task.dataset.text || '', startTime: task.dataset.startTime || null, endTime: task.dataset.endTime || null, completionDate: task.dataset.completionDate || null }; if (taskData.text) tasksByUserData.nitin[status].push(taskData); }); } const sathuCol = document.getElementById(`sathu-${status}`); if (sathuCol) { sathuCol.querySelectorAll('.kanban-task').forEach(task => { const taskData = { text: task.dataset.text || '', startTime: task.dataset.startTime || null, endTime: task.dataset.endTime || null, completionDate: task.dataset.completionDate || null }; if (taskData.text) tasksByUserData.sathu[status].push(taskData); }); } }); await saveTasksToFirestore(currentSelectedDate, tasksByUserData); }
         async function addTask() { if (!db) { alert("Database not connected."); return; } console.log("addTask function called."); const taskInput = document.getElementById('new-task-input'); const startTimeInput = document.getElementById('new-task-start-time'); const endTimeInput = document.getElementById('new-task-end-time'); const nitinCheckbox = document.getElementById('user-nitin'); const sathuCheckbox = document.getElementById('user-sathu'); if (!taskInput || !startTimeInput || !endTimeInput || !nitinCheckbox || !sathuCheckbox) { console.error("Error: Input/user elements not found."); return; } const assignedUsers = []; if (nitinCheckbox.checked) { assignedUsers.push('nitin'); } if (sathuCheckbox.checked) { assignedUsers.push('sathu'); } if (assignedUsers.length === 0) { alert("Please assign the task to at least one user."); return; } const taskText = taskInput.value.trim(); const startTime = startTimeInput.value; const endTime = endTimeInput.value; if (taskText === '') { alert('Please enter a task description.'); taskInput.focus(); return; } if (!startTime) { alert('Please enter a start time.'); startTimeInput.focus(); return; } if (!endTime) { alert('Please enter an end time.'); endTimeInput.focus(); return; } if (startTime >= endTime) { alert('End time must be after start time.'); endTimeInput.focus(); return; } if (!currentSelectedDate) { alert('Please select a date first.'); return; } const newTaskData = { text: taskText, startTime: startTime, endTime: endTime, completionDate: null }; let elementAdded = false; assignedUsers.forEach(user => { const targetTodoColumn = document.getElementById(`${user}-todo`); if (targetTodoColumn) { const taskElementForUser = createTaskElement(newTaskData, user); if (taskElementForUser) { targetTodoColumn.appendChild(taskElementForUser); elementAdded = true; } else { console.error(`Error creating task element for user ${user}.`); } } else { console.error(`Error: Todo column for user ${user} not found.`); } }); if (elementAdded) { taskInput.value = ''; startTimeInput.value = ''; endTimeInput.value = ''; nitinCheckbox.checked = false; sathuCheckbox.checked = false; } await saveCurrentBoardState(); console.log(`addTask completed for "${taskText}" assigned to ${assignedUsers.join(', ')}`); /* No checkAndMoveTasks */ }
         function handleDragOver(event) { const taskElement = event.target.closest('.kanban-task'); if (taskElement && taskElement.classList.contains('editing')) { return; } event.preventDefault(); const targetColumn = event.target.closest('.kanban-column'); if (targetColumn && !targetColumn.classList.contains('drag-over')) { targetColumn.classList.add('drag-over'); } }
@@ -401,7 +413,8 @@
         document.addEventListener('DOMContentLoaded', async () => {
             updateTimeDisplay(); setInterval(updateTimeDisplay, 60000);
             displayMotivationalQuote();
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await new Promise(resolve => setTimeout(resolve, 500)); // Short delay
+
             if (!db) { console.error("DB not initialized. Aborting further setup."); selectedDateDisplay.textContent = "Database Connection Failed!"; return; }
 
             // Setup Navigation
@@ -419,7 +432,10 @@
             const currentBostonDate = getCurrentDateString(BOSTON_TIMEZONE);
             if (dateSelector) {
                 dateSelector.value = currentBostonDate;
-                switchView('hustle-board-view'); // Load board view by default
+                // ** FINAL FIX: Set text immediately, then load data **
+                selectedDateDisplay.textContent = `Showing tasks for: ${formatDisplayDate(currentBostonDate)}`;
+                await displayTasksForDate(currentBostonDate); // Load data after setting initial text
+                // Add listener *after* initial load
                 dateSelector.addEventListener('change', (event) => { if (currentView === 'hustle-board-view') { displayTasksForDate(event.target.value); } else { currentSelectedDate = event.target.value; } });
             } else { console.error("Date selector element not found."); }
             await displayLatestSummary();
@@ -429,7 +445,6 @@
             if (addTaskBtnLocal) { addTaskBtnLocal.addEventListener('click', addTask); /* Keypress listeners can be added back if desired */ }
             else { console.error("Add task button not found."); }
 
-            // Removed task check interval setup
             console.log("App Initialized.");
         });
 
